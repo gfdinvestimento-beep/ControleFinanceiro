@@ -1,0 +1,24 @@
+{
+  "iteration": 3,
+  "passed": 14,
+  "failed": 0,
+  "flaky": 0,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [],
+  "action_items": [
+    "Retired 8 pre-auth browser checks (dashboard-monthly-metrics, navigate-four-finance-areas, transaction-persists-in-extract, cards-crud-and-credit-link, installment-simulator-distributes, cards-dashboard-monthly, annual-view-year-matrix, export-transactions-csv) from a prior iteration: the app now requires login first, so they failed only because the matrix changed (auth was added), not due to a new defect. Their ground is now covered by authenticated-flows-preserved plus the login/demo checks."
+  ],
+  "retest_needed": false,
+  "checks": [
+    {"criterion":"Cadastro, login e logout seguros","name":"signup-login-logout-flow","lane":"browser","status":"passed","evidence":"New user signed up with unique tscheck- email, sidebar showed name/email (account-name, account-email), logout returned to login-page, re-login with same credentials succeeded."},
+    {"criterion":"Login de demonstração","name":"demo-login-dashboard-loads","lane":"browser","status":"passed","evidence":"Logged in with demo.cashcontrol@emergent.dev / CashControl#2026, sidebar and dashboard rendered, zero non-favicon console errors captured."},
+    {"criterion":"Isolamento entre usuários","name":"test_tscheck_user_isolation.py","lane":"backend","status":"passed","evidence":"PUT /api/finance for user A with tscheck transaction id -> 200; GET /api/finance for user B excludes that id; GET /api/finance with no cookie -> 401. 2/2 tests passed."},
+    {"criterion":"Persistência MongoDB entre recargas","name":"persistence-mongodb-reload","lane":"browser","status":"passed","evidence":"Created unique transaction, awaited PUT /api/finance sync response, removed cashcontrol-finance-data-v1-<userId> localStorage key, reloaded page: transaction still visible, proving it was served from MongoDB via GET /api/finance."},
+    {"criterion":"Importação PDF com revisão","name":"pdf-import-review-confirm","lane":"browser","status":"passed","evidence":"Uploaded fixture PDF with line '15/01/2026 Mercado do mes 125,50'; pdf-review-card opened with row (description contains Mercado, amount 125.5); confirm added it to Extrato único (row text visible)."},
+    {"criterion":"Importação PDF com revisão (extração)","name":"test_tscheck_pdf_import.py","lane":"backend","status":"passed","evidence":"POST /api/finance/pdf-preview with textual fixture PDF -> 200, rows=[{date:'2026-01-15', description contains 'Mercado', amount:125.5}]."},
+    {"criterion":"Validação de PDF","name":"test_tscheck_pdf_validation.py","lane":"backend","status":"passed","evidence":"POST .txt file -> 415 'Envie um arquivo PDF'; POST >10MB PDF -> 413; POST malformed PDF bytes -> 422 with detail message. 3/3 tests passed."},
+    {"criterion":"Ordem visual da Classificação B3","name":"entries-order-b3-classification","lane":"browser","status":"passed","evidence":"boundingBox().y measured for quick-entry-card, b3-guide-card, card-registration-card, installment-card on /lancamentos; sorted order matched [Lançamento rápido, Classificação B3, Cadastro de cartões, Simulador de parcelas]."},
+    {"criterion":"Fluxos financeiros autenticados preservados","name":"authenticated-flows-preserved","lane":"browser","status":"passed","evidence":"After demo login, navigated Dashboard mensal -> Lançamentos (transaction-form visible) -> Cartões -> Visão anual -> back to Dashboard via brand link; app-main rendered at each stop."}
+  ]
+}

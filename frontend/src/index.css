@@ -137,3 +137,9 @@
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+[data-testid="entry-forms-section"] > :first-child { order: 1; }
+[data-testid="entry-forms-section"] > :last-child { order: 3; margin-top: 1.5rem; }
+[data-testid="b3-guide-section"] { order: 2; }
+[data-testid="installment-section"] { order: 4; }
+[data-testid="transactions-history-section"] { order: 5; }

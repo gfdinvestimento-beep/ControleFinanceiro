@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { BarChart3, CreditCard, Download, LayoutDashboard, Menu, ReceiptText, Sparkles, X } from "lucide-react";
+import { BarChart3, CreditCard, Download, LayoutDashboard, LogOut, Menu, ReceiptText, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { exportTransactionsCsv } from "@/lib/export";
 import { useFinanceStore } from "@/hooks/useFinanceStore";
+import { endSession, useSession } from "@/lib/session";
 
 const navItems = [
   { href: "/", label: "Dashboard mensal", icon: LayoutDashboard },
@@ -16,6 +17,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data } = useFinanceStore();
+  const user = useSession();
 
   const handleExport = () => exportTransactionsCsv(data.transactions, data.cards);
 
@@ -36,11 +38,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
             return <Link key={href} to={href} onClick={() => setMobileOpen(false)} className={`group flex items-center gap-3 rounded-lg border px-3 py-3 text-sm font-medium transition-colors duration-200 ${active ? "border-cyan-800/60 bg-cyan-950/50 text-cyan-200" : "border-transparent text-slate-400 hover:border-slate-800 hover:bg-slate-900 hover:text-slate-100"}`} data-testid={`nav-${label.toLowerCase().replaceAll(" ", "-")}-link`}><Icon size={18} className={active ? "text-cyan-400" : "text-slate-500 group-hover:text-cyan-400"} /><span>{label}</span>{active && <span className="ml-auto size-1.5 rounded-full bg-cyan-400" />}</Link>;
           })}
         </nav>
-        <div className="mt-auto rounded-xl border border-slate-800 bg-slate-900/70 p-4" data-testid="sidebar-tip-card">
+        <div className="mt-auto space-y-3"><div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4" data-testid="sidebar-tip-card">
           <div className="mb-3 flex size-8 items-center justify-center rounded-lg bg-slate-800 text-cyan-400"><Sparkles size={15} /></div>
           <p className="font-heading text-sm font-semibold text-slate-200" data-testid="sidebar-tip-title">Clareza financeira</p>
           <p className="mt-1 text-xs leading-relaxed text-slate-500" data-testid="sidebar-tip-copy">Acompanhe seus hábitos e transforme intenção em plano.</p>
-        </div>
+        </div><div className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-3" data-testid="account-card"><div className="min-w-0"><p className="truncate text-sm font-medium text-slate-200" data-testid="account-name">{user.name}</p><p className="truncate text-[10px] text-slate-600" data-testid="account-email">{user.email}</p></div><button onClick={() => void endSession()} className="rounded-md p-2 text-slate-500 transition-colors duration-200 hover:bg-rose-950/60 hover:text-rose-300" aria-label="Sair da conta" data-testid="logout-button"><LogOut size={16} /></button></div></div>
       </aside>
       {mobileOpen && <button className="fixed inset-0 z-30 bg-slate-950/70 md:hidden" onClick={() => setMobileOpen(false)} aria-label="Fechar menu" data-testid="mobile-overlay" />}
       <header className="fixed inset-x-0 top-0 z-20 flex h-16 items-center justify-between border-b border-slate-800/80 bg-[#070b12]/90 px-4 backdrop-blur-xl md:hidden" data-testid="mobile-header">

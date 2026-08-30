@@ -24,4 +24,7 @@ Local-first personal finance dashboard in Portuguese with monthly, credit-card a
 - Needs are fixed/variable, wants are extra/additional, and future is net savings. Percentages use monthly income as denominator.
 
 ## Auth and roles
-No authentication, accounts or role gates in this MVP. It is a single local browser workspace.
+- Email/password signup and login use a seven-day JWT held in an httpOnly, secure, same-site cookie. Passwords are bcrypt-hashed.
+- Each authenticated user owns one MongoDB finance document keyed by user id; finance reads/writes always derive user id from the server-side session.
+- A user-specific localStorage key provides a browser cache while MongoDB enables recovery on another device after login.
+- The Lançamentos page accepts text-based bank-statement PDFs, extracts dated currency rows on the backend, and requires an editable preview confirmation before saving.

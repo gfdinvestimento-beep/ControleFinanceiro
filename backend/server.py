@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field
 from typing import List
 import uuid
 from datetime import datetime
+from routers.auth import router as auth_router
+from routers.finance import router as finance_router
 
 
 ROOT_DIR = Path(__file__).parent
@@ -21,6 +23,8 @@ from lib.db import client, db
 # Startup runs before the yield, shutdown after it. Add your own setup/teardown here.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await db.users.create_index("email", unique=True)
+    await db.finances.create_index("user_id", unique=True)
     yield
     client.close()
 
@@ -30,6 +34,8 @@ app = FastAPI(lifespan=lifespan)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+api_router.include_router(auth_router)
+api_router.include_router(finance_router)
 
 
 # Define Models
@@ -58,9 +64,6 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
-# Include the router in the main app
-app.include_router(api_router)
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -75,3 +78,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Include the router in the main app last so every route keeps the /api contract.
+app.include_router(api_router)
