@@ -1,0 +1,30 @@
+{
+  "iteration": 1,
+  "passed": 7,
+  "failed": 1,
+  "flaky": 0,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [
+    {
+      "severity": "medium",
+      "criterion": "Simulador de parcelamentos",
+      "evidence": "Browser check created a unique 3x purchase and verified its installment row, but the dashboard assertion for the first monthly installment was not found after returning to the dashboard. The created purchase used the default current date; with the seeded card closing day 15, its first invoice is the next month, while the dashboard remained on the current month. This indicates the check flow needs to select the calculated invoice month before asserting consolidation; no API failure was involved."
+    }
+  ],
+  "action_items": [
+    "Retest the installment dashboard consolidation flow while selecting the invoice month calculated from purchase date and card closing day.",
+    "Backend suite was reachable but contains no test files (pytest exited with no tests ran)."
+  ],
+  "retest_needed": true,
+  "checks": [
+    {"criterion":"Dashboard mensal inicial com dados e métricas","name":"dashboard-monthly-metrics","lane":"browser","status":"passed","evidence":"monthly-dashboard-page, monthly-summary-cards, rule-503020-card, emergency-fund-card and both dashboard charts visible."},
+    {"criterion":"Navegação entre as quatro áreas","name":"navigate-four-finance-areas","lane":"browser","status":"passed","evidence":"SPA navigated through Lançamentos, Cartões, Visão anual and Dashboard mensal; each page test id was visible."},
+    {"criterion":"Criar lançamento e persistir no navegador","name":"transaction-persists-in-extract","lane":"browser","status":"passed","evidence":"Created unique transaction, found it in Extrato único, reloaded, found it again, and localStorage contained the matching description."},
+    {"criterion":"CRUD de cartões com vínculo condicional","name":"cards-crud-and-credit-link","lane":"browser","status":"passed","evidence":"Created and edited a unique card; Crédito exposed transaction-card-select and switching to Pix removed it."},
+    {"criterion":"Simulador de parcelamentos","name":"installment-simulator-distributes","lane":"browser","status":"failed","evidence":"Unique 3x installment row was created and showed 3x de R$ 300,00; dashboard assertion for description · 1/3 failed because the flow did not change dashboard to the next invoice month."},
+    {"criterion":"Dashboard de cartões","name":"cards-dashboard-monthly","lane":"browser","status":"passed","evidence":"Cards page showed invoice table, limit/distribution charts, and Limite disponível summary."},
+    {"criterion":"Dashboard anual","name":"annual-view-year-matrix","lane":"browser","status":"passed","evidence":"Annual page showed year selector, 12-month category matrix, cash-flow chart and essential-cost chart; year changed successfully."},
+    {"criterion":"Exportação CSV","name":"export-transactions-csv","lane":"browser","status":"passed","evidence":"Downloaded .csv and verified quoted semicolon-delimited header plus seeded Salário row."}
+  ]
+}

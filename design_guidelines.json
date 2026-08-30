@@ -1,0 +1,109 @@
+{
+  "project_overview": {
+    "name": "Unified Personal Finance Dashboard",
+    "theme": "Premium Dark Mode",
+    "vibe": "Extremely modern, clean, minimalist, fluid, authoritative",
+    "target_audience": "Users wanting strict control over budget, credit cards, and 50/30/20 rule tracking"
+  },
+  "typography": {
+    "headings": {
+      "family": "Outfit",
+      "weights": ["font-light", "font-semibold", "font-bold"],
+      "styling": "tracking-tight leading-none text-slate-50",
+      "sizes": {
+        "h1": "text-3xl md:text-4xl",
+        "h2": "text-2xl md:text-3xl",
+        "h3": "text-xl md:text-2xl",
+        "h4": "text-lg md:text-xl"
+      }
+    },
+    "body": {
+      "family": "Manrope",
+      "weights": ["font-normal", "font-medium"],
+      "styling": "leading-relaxed text-slate-300",
+      "sizes": {
+        "default": "text-base",
+        "small": "text-sm",
+        "tiny": "text-xs tracking-wider uppercase"
+      }
+    },
+    "anti_patterns": [
+      "DO NOT use Inter, Roboto, or Open Sans for headings.",
+      "Never use center alignment for dense data or paragraphs."
+    ]
+  },
+  "colors": {
+    "backgrounds": {
+      "app": "bg-slate-950",
+      "sidebar": "bg-slate-900/80 backdrop-blur-xl",
+      "card": "bg-slate-900",
+      "card_hover": "hover:bg-slate-800/80",
+      "header": "bg-slate-950/90 backdrop-blur-xl"
+    },
+    "borders": {
+      "default": "border-slate-800",
+      "focus": "focus:border-cyan-700",
+      "active": "border-cyan-800"
+    },
+    "brand": {
+      "primary": "bg-cyan-800 text-slate-50",
+      "primary_hover": "hover:bg-cyan-700",
+      "secondary": "bg-slate-800 text-slate-200",
+      "secondary_hover": "hover:bg-slate-700"
+    },
+    "status": {
+      "success": "text-emerald-400",
+      "success_bg": "bg-emerald-500/10 border-emerald-500/20",
+      "danger": "text-rose-400",
+      "danger_bg": "bg-rose-500/10 border-rose-500/20",
+      "warning": "text-amber-400"
+    }
+  },
+  "spacing_and_layout": {
+    "grid_system": "High Density Grid (For Dashboards). Use grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with gap-4 or gap-6.",
+    "card_style": "Grid Borders (The Technical Look). Flat backgrounds, 1px subtle borders (border-slate-800), rounded-md or rounded-lg maximum. NO heavy drop shadows.",
+    "navigation": "Left sidebar (w-64) for desktop, fixed. Hidden on mobile with hamburger menu opening a drawer.",
+    "page_container": "ml-0 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 min-h-screen",
+    "glassmorphism": "Used strictly for fixed headers/navs: bg-slate-950/80 backdrop-blur-xl border-b border-slate-800."
+  },
+  "components_strategy": {
+    "forms": "Use Shadcn UI Inputs, Select, Checkbox. Dark mode styling: bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500.",
+    "tables": "Dense rows. border-b border-slate-800. Hover effect on rows: hover:bg-slate-800/50. Align numbers to the right.",
+    "buttons": "Sharp or slightly rounded (rounded-md). Subtle transition-all duration-200. Focus rings must be cyan-700.",
+    "charts": "Use Recharts. Tooltips MUST have bg-slate-900 border border-slate-700 text-slate-200 to be readable.",
+    "modals": "Use Shadcn Dialog. Overlay must be bg-slate-950/80 backdrop-blur-sm. Content bg-slate-900 border border-slate-800."
+  },
+  "motion_and_interaction": {
+    "hover_states": "All interactive elements must change state. Cards translate-y-[-2px] with slight border color change.",
+    "page_transitions": "Subtle fade-in for page loads.",
+    "charts_animation": "Enable Recharts animations on load."
+  },
+  "screens_and_routing": {
+    "DashboardMensal (/)": "Default home. Top month selector. Cards for Total Income, Expenses, Balance. 50/30/20 Table. Emergency Fund Card. 3 Charts (Income vs Expense Bar, Category Doughnut, Payment Method Column).",
+    "Lancamentos (/lancamentos)": "Unified table for daily transactions. Quick Launch form. Card Registration form. Installment Simulator form.",
+    "Cartoes (/cartoes)": "Credit Card Dashboard. Month selector. Table of Invoices (Total Limit, Consumed, Available). Doughnut chart of consumption per card. Bar chart of Limit vs Invoice.",
+    "VisaoAnual (/anual)": "12-month matrix table (Categories x Months). Line chart for Cashflow. Combo chart (Bar+Line) for Essential Cost vs Annual Average."
+  },
+  "business_logic_rules": {
+    "invoice_closing": "If Purchase Date <= Closing Date: bill in current month. If > Closing Date: bill in next month.",
+    "essential_cost": "Sum of expenses classified as 'Fixo' or 'Variável'.",
+    "emergency_fund": "CLT = 6x Essential Cost. Autônomo = 12x Essential Cost.",
+    "rule_50_30_20": "Needs (Fixo/Variável) <= 50%. Wants (Extra/Adicional) <= 30%. Savings (Income - Expenses) >= 20%. Mark as '✅ Saudável' or '❌ Acima/Abaixo'."
+  },
+  "technical_instructions": {
+    "frameworks": "React (using .js/.jsx, NOT .tsx), Tailwind CSS, Lucide Icons, Recharts.",
+    "data_persistence": "Must use localStorage. Initialize with 5 mock transactions and 1 active installment.",
+    "export": "Include a button to export transaction data as CSV.",
+    "testing": "All interactive and key informational elements MUST include a `data-testid` attribute (e.g., data-testid='submit-transaction-btn')."
+  },
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Write code in .js / .jsx files. Do not use TypeScript (.tsx).",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "DO NOT use complete transparent backgrounds in headers, overlays, or dropdowns. Always use solid or heavily blurred backgrounds.",
+    "You MUST NOT apply universal transition (e.g., transition: all). Add transitions for specific interactive elements only.",
+    "You MUST NOT center align the app container. Do not add text-align: center to the root.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Never use placeholder image URLs.",
+    "Ensure charts use color-blind-friendly palettes (use the Slate and Cyan variations appropriately)."
+  ]
+}

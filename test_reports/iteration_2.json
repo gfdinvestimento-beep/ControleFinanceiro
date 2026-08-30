@@ -1,0 +1,23 @@
+{
+  "iteration": 2,
+  "passed": 8,
+  "failed": 0,
+  "flaky": 0,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [],
+  "action_items": [
+    "Backend suite was reachable but contains no test files (pytest exited with no tests ran); acceptance criteria are localStorage/UI-only and have no API-bearing lane."
+  ],
+  "retest_needed": false,
+  "checks": [
+    {"criterion":"Dashboard mensal inicial com dados e métricas","name":"dashboard-monthly-metrics","lane":"browser","status":"passed","evidence":"Reran persisted check: monthly dashboard, summary cards, budget rule, emergency fund and charts visible."},
+    {"criterion":"Navegação entre as quatro áreas","name":"navigate-four-finance-areas","lane":"browser","status":"passed","evidence":"Reran persisted check: SPA navigated through Lançamentos, Cartões, Visão anual and Dashboard mensal."},
+    {"criterion":"Criar lançamento e persistir no navegador","name":"transaction-persists-in-extract","lane":"browser","status":"passed","evidence":"Reran persisted check: unique transaction persisted across reload and was found in Extrato único/localStorage."},
+    {"criterion":"CRUD de cartões com vínculo condicional","name":"cards-crud-and-credit-link","lane":"browser","status":"passed","evidence":"Reran persisted check: unique card was created/edited and Crédito linkage switched with Pix."},
+    {"criterion":"Simulador de parcelamentos","name":"installment-simulator-distributes","lane":"browser","status":"passed","evidence":"Updated persisted scenario calculates invoice month from purchase date and closing day, selects it, confirms selector value and monthly consolidated total R$ 900,00 with 2 expenses (seed installment plus new 1/3 installment)."},
+    {"criterion":"Dashboard de cartões","name":"cards-dashboard-monthly","lane":"browser","status":"passed","evidence":"Reran persisted check: invoice table, limit/distribution charts and available-limit summary visible."},
+    {"criterion":"Dashboard anual","name":"annual-view-year-matrix","lane":"browser","status":"passed","evidence":"Reran persisted check: year selector, 12-month category matrix, cash-flow and essential-cost charts visible; year changed."},
+    {"criterion":"Exportação CSV","name":"export-transactions-csv","lane":"browser","status":"passed","evidence":"Reran persisted check: local CSV download completed with quoted semicolon-delimited header and seeded Salário row."}
+  ]
+}
