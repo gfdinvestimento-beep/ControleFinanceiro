@@ -29,6 +29,11 @@ export const useFinanceStore = () => {
     transactions: [item, ...current.transactions.filter((entry) => entry.id !== item.id)],
   })), [update]);
 
+  const importTransactions = useCallback((items: Transaction[]) => update((current) => ({
+    ...current,
+    transactions: [...items, ...current.transactions],
+  })), [update]);
+
   const removeTransaction = useCallback((id: string) => update((current) => ({
     ...current,
     transactions: current.transactions.filter((entry) => entry.id !== id),
@@ -56,5 +61,5 @@ export const useFinanceStore = () => {
     installments: current.installments.filter((entry) => entry.id !== id),
   })), [update]);
 
-  return { data, saveTransaction, removeTransaction, saveCard, removeCard, saveInstallment, removeInstallment };
+  return { data, saveTransaction, importTransactions, removeTransaction, saveCard, removeCard, saveInstallment, removeInstallment };
 };

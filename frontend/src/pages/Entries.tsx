@@ -1,6 +1,6 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import type { ReactNode } from "react";
-import { CreditCard as CreditCardIcon, Download, Edit3, Layers3, Plus, ReceiptText, Trash2, X } from "lucide-react";
+import { CreditCard as CreditCardIcon, Download, Edit3, Layers3, Plus, ReceiptText, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import AppShell from "@/components/AppShell";
 import { useFinanceStore } from "@/hooks/useFinanceStore";
 import { CATEGORIES, COST_CLASSES, formatCurrency, formatDate, PAYMENT_METHODS, type CostClass, type CreditCard, type Installment, type PaymentMethod, type Transaction, type TransactionType } from "@/lib/finance";
 import { exportTransactionsCsv } from "@/lib/export";
+import { parseTransactionsCsv } from "@/lib/importCsv";
 
 const inputClass = "h-10 w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 text-sm text-slate-100 outline-none transition-colors duration-200 placeholder:text-slate-600 focus:border-cyan-700";
 const selectClass = `${inputClass} appearance-none`;
@@ -25,7 +26,7 @@ const emptyCard = (): CreditCard => ({ id: "", name: "", limit: 0, closingDay: 1
 const emptyInstallment = (): Installment => ({ id: "", purchaseDate: today(), cardId: "", category: "Viagem", description: "", totalAmount: 0, installments: 4, costClass: "extra" });
 
 export default function Entries() {
-  const { data, saveTransaction, removeTransaction, saveCard, removeCard, saveInstallment, removeInstallment } = useFinanceStore();
+  const { data, saveTransaction, importTransactions, removeTransaction, saveCard, removeCard, saveInstallment, removeInstallment } = useFinanceStore();
   const [transaction, setTransaction] = useState(emptyTransaction);
   const [card, setCard] = useState(emptyCard);
   const [installment, setInstallment] = useState(emptyInstallment);
@@ -68,10 +69,18 @@ export default function Entries() {
     const target = data.cards.find((item) => item.id === id);
     if (target && window.confirm(`Excluir ${target.name}? Os cartões vinculados serão limpos dos lançamentos.`)) { removeCard(id); flash("Cartão excluído e vínculos removidos."); }
   };
+  const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const result = parseTransactionsCsv(await file.text(), data.cards);
+    if (result.transactions.length) importTransactions(result.transactions);
+    flash(result.transactions.length ? `${result.transactions.length} lançamentos importados${result.skipped ? ` · ${result.skipped} ignorados` : ""}.` : "Nenhum lançamento válido encontrado no CSV.");
+    event.target.value = "";
+  };
 
   return <AppShell>
     <div className="animate-[page-in_400ms_ease-out]" data-testid="entries-page">
-      <header className="mb-8 flex flex-col justify-between gap-5 border-b border-slate-800/80 pb-7 sm:flex-row sm:items-end" data-testid="entries-header"><div><p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-500">Central de movimentações</p><h1 className="font-heading text-3xl font-semibold tracking-tight text-slate-50" data-testid="entries-title">Lançamentos & cadastros</h1><p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-400" data-testid="entries-description">Registre o que acontece hoje. O CashControl organiza o impacto para você.</p></div><Button variant="outline" onClick={() => exportTransactionsCsv(data.transactions, data.cards)} className="w-fit border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white" data-testid="entries-export-csv-button"><Download size={15} /> Exportar dados</Button></header>
+      <header className="mb-8 flex flex-col justify-between gap-5 border-b border-slate-800/80 pb-7 sm:flex-row sm:items-end" data-testid="entries-header"><div><p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-500">Central de movimentações</p><h1 className="font-heading text-3xl font-semibold tracking-tight text-slate-50" data-testid="entries-title">Lançamentos & cadastros</h1><p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-400" data-testid="entries-description">Registre o que acontece hoje. O CashControl organiza o impacto para você.</p></div><div className="flex flex-wrap gap-2"><label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm font-medium text-slate-300 transition-colors duration-200 hover:bg-slate-800 hover:text-white" data-testid="import-csv-control"><Upload size={15} /> Importar CSV<input type="file" accept=".csv,text/csv" className="hidden" onChange={handleImport} data-testid="import-csv-input" /></label><Button variant="outline" onClick={() => exportTransactionsCsv(data.transactions, data.cards)} className="border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white" data-testid="entries-export-csv-button"><Download size={15} /> Exportar dados</Button></div></header>
       {notice && <div className="mb-6 flex items-center justify-between rounded-lg border border-cyan-800/50 bg-cyan-950/40 px-4 py-3 text-sm text-cyan-200" role="status" data-testid="entries-notice">{notice}<button onClick={() => setNotice("")} className="text-cyan-400 hover:text-white" aria-label="Fechar aviso" data-testid="close-notice-button"><X size={16} /></button></div>}
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]" data-testid="entry-forms-section">

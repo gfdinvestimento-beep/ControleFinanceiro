@@ -14,6 +14,8 @@ Local-first personal finance dashboard in Portuguese with monthly, credit-card a
 - Cartões (`/cartoes`) shows invoice totals, available limit and charts per selected month.
 - Visão anual (`/anual`) shows the category × month matrix, cash-flow lines and essential-cost bars against the annual average.
 - Data is persisted in browser localStorage under `cashcontrol-finance-data-v1`; deleting a card clears its links from transactions and installments.
+- CSV export and CSV bank-statement import are local browser actions; imported rows are normalized into the same transaction store. PDF import is not included.
+- Monthly Insights are deterministic recommendations derived from the selected month's income, expense classes, top categories and net savings.
 
 ## Business rules
 - Credit purchase is assigned to the purchase month when purchase day is <= card closing day; otherwise it is assigned to the next month.
