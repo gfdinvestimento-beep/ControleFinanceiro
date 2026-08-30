@@ -1,0 +1,137 @@
+{
+  "iteration": 5,
+  "passed": 16,
+  "failed": 0,
+  "flaky": 0,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [],
+  "action_items": [],
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Login funciona no preview incorporado",
+      "name": "iframe-cross-site-login-cookie-logout",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Navigated top page to https://example.com (real cross-origin parent), embedded https://cashcontrol-47.preview.emergentagent.com in an iframe. Filled demo credentials inside the iframe, submitted; app-sidebar became visible inside the iframe and login-page did not reappear (0 count) - the redirect-back regression is fixed."
+    },
+    {
+      "criterion": "Cookie compatível com iframe seguro",
+      "name": "iframe-cross-site-login-cookie-logout",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "page.context().cookies(appUrl) after cross-site iframe login returned cashcontrol_session with httpOnly=true, secure=true, sameSite='None'. Cross-checked with a raw curl POST /api/login over HTTPS: Set-Cookie: cashcontrol_session=...; HttpOnly; Secure; SameSite=None; Partitioned - all four required attributes present."
+    },
+    {
+      "criterion": "Cookie compatível com iframe seguro (atributos brutos do Set-Cookie)",
+      "name": "test_tscheck_cookie_partitioned_attrs.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST https://cashcontrol-47.preview.emergentagent.com/api/auth/login (real HTTPS ingress, not localhost:8001 which is plain HTTP) -> 200; raw Set-Cookie header for cashcontrol_session contains httponly, secure, samesite=none and partitioned. 1/1 passed."
+    },
+    {
+      "criterion": "Acesso direto continua funcionando",
+      "name": "login-persists-after-navigation-reload",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Direct (non-iframe) demo login on the preview URL: app-sidebar + account-email visible; page.reload() and re-navigating to '/' both kept the dashboard, login-page never reappeared."
+    },
+    {
+      "criterion": "Acesso direto continua funcionando (sessão via cookie httpOnly)",
+      "name": "test_tscheck_auth_session.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "GET /api/auth/session with no cookie -> 200 null. Signup/login sets cashcontrol_session cookie; GET /api/auth/session -> 200 with matching email. Logout -> 204; subsequent session -> 200 null. 3/3 passed."
+    },
+    {
+      "criterion": "Logout funciona nos dois contextos - acesso direto",
+      "name": "logout-ends-session-no-reentry",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Signed up tscheck- user, logged out via logout-button on direct access, login-page reappeared, GET /api/auth/session returned null, reload without re-supplying credentials kept login-page visible (no auto re-entry)."
+    },
+    {
+      "criterion": "Logout funciona nos dois contextos - incorporado",
+      "name": "iframe-cross-site-login-cookie-logout",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Same check: after confirming iframe dashboard + reload persisted the session, clicked logout-button inside the iframe -> login-page reappeared inside the iframe; reloading the iframe again (no re-login) kept login-page visible, confirming no auto re-entry cross-site."
+    },
+    {
+      "criterion": "Login inválido permanece seguro (regressão)",
+      "name": "invalid-login-shows-error-no-session",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Wrong password on demo email: login-page stayed visible, auth-error showed message, app-sidebar never rendered, session null, reload kept login-page."
+    },
+    {
+      "criterion": "Login inválido rejeitado sem criar sessão (regressão, API)",
+      "name": "test_tscheck_auth_session.py::test_login_invalid_password_rejected_no_session_created",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "Wrong password -> 401, no cashcontrol_session cookie set, GET /api/auth/session -> 200 null."
+    },
+    {
+      "criterion": "Sessão independente de localStorage (regressão)",
+      "name": "session-survives-localstorage-clear",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "After demo login, cleared localStorage then reloaded; dashboard still rendered (cookie-based session, not localStorage)."
+    },
+    {
+      "criterion": "Cadastro, login e logout seguros (regressão)",
+      "name": "signup-login-logout-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-ran signup/login/logout/re-login flow; still passes."
+    },
+    {
+      "criterion": "Login de demonstração (regressão)",
+      "name": "demo-login-dashboard-loads",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Dashboard renders with zero non-favicon console errors on demo login."
+    },
+    {
+      "criterion": "Isolamento entre usuários (regressão)",
+      "name": "test_tscheck_user_isolation.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "2/2 tests passed."
+    },
+    {
+      "criterion": "Importação PDF com revisão (regressão)",
+      "name": "test_tscheck_pdf_import.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "1/1 test passed."
+    },
+    {
+      "criterion": "Validação de PDF (regressão)",
+      "name": "test_tscheck_pdf_validation.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "3/3 tests passed."
+    },
+    {
+      "criterion": "Persistência MongoDB entre recargas (regressão)",
+      "name": "persistence-mongodb-reload",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Unique transaction created, synced via PUT /api/finance, localStorage key removed, reload still showed entry served from MongoDB."
+    },
+    {
+      "criterion": "Fluxos financeiros autenticados preservados (regressão)",
+      "name": "authenticated-flows-preserved",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Navigation across Dashboard/Lançamentos/Cartões/Visão anual works post-fix, app-main rendered at each stop."
+    }
+  ],
+  "notes": [
+    "Also re-ran pre-existing pdf-import-review-confirm and entries-order-b3-classification browser checks as regression sweep (both passed) though they map to criteria outside this iteration's matrix, so not listed as separate checks[] entries to avoid double-counting against the 8-criterion cap; full pass confirmed no regressions from the cross-site cookie fix.",
+    "The new cross-site iframe check uses https://example.com as a genuine third-party parent origin (not same-site), embeds the public preview URL in an iframe, and drives the login/reload/logout flow entirely inside the iframe's own document - this is the strongest available proxy for 'parent site with a different origin' without control of a second real domain.",
+    "Confirmed via curl that localhost:8001 (plain HTTP) intentionally omits Secure/Partitioned/SameSite=None and instead sets SameSite=Lax - this is correct HTTPS-only behavior, not a bug; the dedicated backend test therefore targets the public HTTPS APP_URL for this specific criterion."
+  ]
+}
