@@ -1,0 +1,104 @@
+{
+  "iteration": 4,
+  "passed": 13,
+  "failed": 0,
+  "flaky": 0,
+  "blocked": 0,
+  "test_error": 0,
+  "bugs": [],
+  "action_items": [],
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Login não retorna à tela inicial",
+      "name": "login-persists-after-navigation-reload",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Logged in with demo.cashcontrol@emergent.dev / CashControl#2026, app-sidebar + account-email visible. page.reload() kept dashboard visible (no login-page). Re-navigating to '/' also kept dashboard visible; login-page never reappeared."
+    },
+    {
+      "criterion": "Sessão independente de localStorage",
+      "name": "session-survives-localstorage-clear",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "After demo login, ran window.localStorage.clear() then page.reload(). Dashboard (app-sidebar, account-email) still rendered; login-page did not appear, confirming session relies on the httpOnly cookie, not localStorage."
+    },
+    {
+      "criterion": "Sessão via cookie httpOnly validada por /api/auth/session",
+      "name": "test_tscheck_auth_session.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "GET /api/auth/session with no cookie -> 200 null (no 401). POST /api/auth/login with valid creds -> 200 + cashcontrol_session cookie set; GET /api/auth/session -> 200 with matching email. POST /api/auth/logout -> 204; subsequent GET /api/auth/session -> 200 null. 3/3 tests passed."
+    },
+    {
+      "criterion": "Login inválido permanece seguro",
+      "name": "invalid-login-shows-error-no-session",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Submitted demo email with wrong password: login-page stayed visible, auth-error showed non-empty message, app-sidebar never rendered, GET /api/auth/session returned null, and reload kept login-page visible."
+    },
+    {
+      "criterion": "Login inválido rejeitado sem criar sessão (API)",
+      "name": "test_tscheck_auth_session.py::test_login_invalid_password_rejected_no_session_created",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /api/auth/login with wrong password for an existing tscheck- user -> 401, no cashcontrol_session cookie set on the client, GET /api/auth/session -> 200 null."
+    },
+    {
+      "criterion": "Logout encerra a sessão",
+      "name": "logout-ends-session-no-reentry",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Signed up a tscheck- user, logged out via logout-button, login-page reappeared, GET /api/auth/session returned null, and reloading without supplying credentials again kept login-page visible (app-sidebar never rendered)."
+    },
+    {
+      "criterion": "Cadastro, login e logout seguros (pré-existente, regressão)",
+      "name": "signup-login-logout-flow",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-ran prior signup/login/logout/re-login browser check; still passes after login-persistence changes."
+    },
+    {
+      "criterion": "Login de demonstração (pré-existente, regressão)",
+      "name": "demo-login-dashboard-loads",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-ran prior demo-login browser check; dashboard renders with zero non-favicon console errors."
+    },
+    {
+      "criterion": "Isolamento entre usuários (pré-existente, regressão)",
+      "name": "test_tscheck_user_isolation.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "2/2 tests passed on regression re-run."
+    },
+    {
+      "criterion": "Importação PDF com revisão (extração) (pré-existente, regressão)",
+      "name": "test_tscheck_pdf_import.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "1/1 test passed on regression re-run."
+    },
+    {
+      "criterion": "Validação de PDF (pré-existente, regressão)",
+      "name": "test_tscheck_pdf_validation.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "3/3 tests passed on regression re-run."
+    },
+    {
+      "criterion": "Persistência MongoDB entre recargas (pré-existente, regressão)",
+      "name": "persistence-mongodb-reload",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-ran by name: unique transaction created, PUT /api/finance synced, localStorage key removed, reload still showed the entry - served from MongoDB via GET /api/finance."
+    },
+    {
+      "criterion": "Fluxos financeiros autenticados preservados (pré-existente, regressão)",
+      "name": "authenticated-flows-preserved",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-ran; navigation across Dashboard/Lançamentos/Cartões/Visão anual still works post-login-fix, app-main rendered at each stop."
+    }
+  ]
+}

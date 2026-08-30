@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from lib.auth import create_token, current_user, hash_password, new_user_id, verify_password
+from lib.auth import create_token, current_user, hash_password, new_user_id, optional_user, verify_password
 from lib.db import db
 from models.auth import LoginRequest, SignupRequest, UserPublic
 
@@ -33,6 +33,11 @@ async def login(input: LoginRequest, response: Response, request: Request):
 
 @router.get("/me", response_model=UserPublic)
 async def me(user: UserPublic = Depends(current_user)):
+    return user
+
+
+@router.get("/session", response_model=UserPublic | None)
+async def session(user: UserPublic | None = Depends(optional_user)):
     return user
 
 

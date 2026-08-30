@@ -25,6 +25,7 @@ Local-first personal finance dashboard in Portuguese with monthly, credit-card a
 
 ## Auth and roles
 - Email/password signup and login use a seven-day JWT held in an httpOnly, secure, same-site cookie. Passwords are bcrypt-hashed.
+- Session bootstrap trusts only the server-owned cookie through `/api/auth/session`; it does not depend on localStorage, preventing login loops when browser storage is cleared or restricted.
 - Each authenticated user owns one MongoDB finance document keyed by user id; finance reads/writes always derive user id from the server-side session.
 - A user-specific localStorage key provides a browser cache while MongoDB enables recovery on another device after login.
 - The Lançamentos page accepts text-based bank-statement PDFs, extracts dated currency rows on the backend, and requires an editable preview confirmation before saving.

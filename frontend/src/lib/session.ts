@@ -18,15 +18,9 @@ export const useSession = () => {
   return user;
 };
 
-const SESSION_HINT = "cashcontrol-session-active";
-
-export const hasSessionHint = () => localStorage.getItem(SESSION_HINT) === "1";
-export const clearSessionHint = () => localStorage.removeItem(SESSION_HINT);
-
 // Call after every successful login/signup.
 export function beginSession(): void {
   queryClient.clear();
-  localStorage.setItem(SESSION_HINT, "1");
 }
 
 // Call from every sign-out control; the hard redirect resets all in-memory state.
@@ -35,7 +29,6 @@ export async function endSession(redirectTo: string = "/login"): Promise<void> {
     await apiPost("/auth/logout");
   } finally {
     queryClient.clear();
-    clearSessionHint();
     window.location.assign(redirectTo);
   }
 }

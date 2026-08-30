@@ -26,19 +26,26 @@ def create_token(user_id: str) -> str:
     return jwt.encode(payload, os.environ["JWT_SECRET"], algorithm=ALGORITHM)
 
 
-async def current_user(request: Request) -> UserPublic:
+async def optional_user(request: Request) -> UserPublic | None:
     token = request.cookies.get("cashcontrol_session")
     if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sessão necessária")
+        return None
     try:
         payload = jwt.decode(token, os.environ["JWT_SECRET"], algorithms=[ALGORITHM])
         user_id = str(payload["sub"])
     except (jwt.PyJWTError, KeyError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sessão inválida")
+        return None
     user = await db.users.find_one({"id": user_id})
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário não encontrado")
+        return None
     return UserPublic(id=user["id"], name=user["name"], email=user["email"])
+
+
+async def current_user(request: Request) -> UserPublic:
+    user = await optional_user(request)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sessão necessária")
+    return user
 
 
 def new_user_id() -> str:
