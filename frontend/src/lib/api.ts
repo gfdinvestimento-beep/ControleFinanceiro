@@ -1,5 +1,5 @@
 // Typed fetch layer over the FastAPI backend.
-const API_URL = import.meta.env.VITE_API_URL || "https://controlefinanceiro-xxcd.onrender.com";
+const API_URL = (import.meta.env.VITE_API_URL || "https://controlefinanceiro-xxcd.onrender.com").replace(/\/$/, "");
 const BASE = `${API_URL}/api`;
 
 // Fields are declared, not constructor parameter properties: tsconfig sets
@@ -19,8 +19,11 @@ export class ApiError extends Error {
 type JsonBody = unknown;
 
 async function request<T>(method: string, path: string, body?: JsonBody): Promise<T> {
+  // Garante que o caminho termine com '/' para evitar o redirect 308 do FastAPI
+  const formattedPath = path.endsWith("/") ? path : `${path}/`;
+
   // Auth rides the httpOnly session cookie automatically — never add auth headers here.
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${BASE}${formattedPath}`, {
     method,
     credentials: "include",
     headers: body === undefined ? undefined : { "Content-Type": "application/json" },
@@ -47,9 +50,10 @@ export const apiPatch = <T>(path: string, body?: JsonBody) =>
 export const apiDelete = <T>(path: string) => request<T>("DELETE", path);
 
 export const apiUpload = async <T>(path: string, file: File): Promise<T> => {
+  const formattedPath = path.endsWith("/") ? path : `${path}/`;
   const formData = new FormData();
   formData.append("file", file);
-  const res = await fetch(`${BASE}${path}`, { method: "POST", credentials: "include", body: formData });
+  const res = await fetch(`${BASE}${formattedPath}`, { method: "POST", credentials: "include", body: formData });
   if (!res.ok) {
     const errBody = await res.json().catch(() => null);
     throw new ApiError(res.status, errBody);
