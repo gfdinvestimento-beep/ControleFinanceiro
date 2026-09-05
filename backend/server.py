@@ -12,31 +12,51 @@ from datetime import datetime
 from routers.auth import router as auth_router
 from routers.finance import router as finance_router
 
-
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # MongoDB connection
 from lib.db import client, db
 
-
-# Startup runs before the yield, shutdown after it. Add your own setup/teardown here.
+# Startup runs before the yield, shutdown after it.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await db.users.create_index("email", unique=True)
-    await db.finances.create_index("user_id", unique=True)
+    try:
+        # Cria as coleções e índices sem quebrar se o banco foi limpo
+        await db.users.create_index("email", unique=True)
+        await db.finances.create_index("user_id", unique=True)
+        logger.info("MongoDB indexes verified successfully.")
+    except Exception as e:
+        logger.error(f"Error creating MongoDB indexes: {e}")
     yield
     client.close()
 
-
-# Create the main app without a prefix
+# Create the main app
 app = FastAPI(lifespan=lifespan)
+
+# CORS middleware MUST be added BEFORE including routers
+cors_origins = [origin.strip() for origin in os.environ.get('CORS_ORIGINS', '*').split(',') if origin.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=cors_origins if "*" not in cors_origins else [],
+    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 api_router.include_router(auth_router)
 api_router.include_router(finance_router)
-
 
 # Define Models
 class StatusCheck(BaseModel):
@@ -47,7 +67,6 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
-# Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -64,24 +83,5 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
-# Configuração atualizada do CORS para Vercel
-cors_origins = [origin.strip() for origin in os.environ.get('CORS_ORIGINS', '*').split(',') if origin.strip()]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=cors_origins if "*" not in cors_origins else [],
-    allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-# Include the router in the main app last so every route keeps the /api contract.
+# Include the router in the main app
 app.include_router(api_router)
