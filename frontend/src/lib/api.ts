@@ -19,8 +19,8 @@ export class ApiError extends Error {
 type JsonBody = unknown;
 
 async function request<T>(method: string, path: string, body?: JsonBody): Promise<T> {
-  // Garante que o caminho termine com '/' para evitar o redirect 308 do FastAPI
-  const formattedPath = path.endsWith("/") ? path : `${path}/`;
+  // Removida a adição forçada de barra no final
+  const formattedPath = path.startsWith("/") ? path : `/${path}`;
 
   // Auth rides the httpOnly session cookie automatically — never add auth headers here.
   const res = await fetch(`${BASE}${formattedPath}`, {
@@ -50,7 +50,7 @@ export const apiPatch = <T>(path: string, body?: JsonBody) =>
 export const apiDelete = <T>(path: string) => request<T>("DELETE", path);
 
 export const apiUpload = async <T>(path: string, file: File): Promise<T> => {
-  const formattedPath = path.endsWith("/") ? path : `${path}/`;
+  const formattedPath = path.startsWith("/") ? path : `/${path}`;
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch(`${BASE}${formattedPath}`, { method: "POST", credentials: "include", body: formData });
