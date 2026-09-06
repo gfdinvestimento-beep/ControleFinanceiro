@@ -6,7 +6,7 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-export default function AppShell({ children }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const handleLogout = async () => {
     try {
       await endSession();
@@ -17,7 +17,6 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-[#070b12] text-slate-100 flex">
-      {/* Exemplo de menu lateral onde o botão chama o handleLogout */}
       <main className="flex-1 p-6">
         {children}
         <button 
@@ -31,3 +30,5 @@ export default function AppShell({ children }: AppShellProps) {
     </div>
   );
 }
+
+export default AppShell;
