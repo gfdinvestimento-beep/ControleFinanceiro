@@ -2,9 +2,9 @@ const API_URL = import.meta.env.VITE_API_URL || "";
 
 export class ApiError extends Error {
   status: number;
-  body?: unknown;
+  body?: Record<string, unknown> | null;
 
-  constructor(message: string, status: number = 400, body?: unknown) {
+  constructor(message: string, status: number = 400, body?: Record<string, unknown> | null) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -14,8 +14,8 @@ export class ApiError extends Error {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const message = errorData.detail || errorData.message || "Erro na requisição";
+    const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+    const message = (typeof errorData.detail === "string" ? errorData.detail : typeof errorData.message === "string" ? errorData.message : "Erro na requisição");
     throw new ApiError(message, response.status, errorData);
   }
   return response.json();
