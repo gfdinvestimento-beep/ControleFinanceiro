@@ -18,17 +18,24 @@ export const useSession = () => {
   return user;
 };
 
+export const useOptionalSession = () => {
+  return useContext(SessionContext);
+};
+
 // Call after every successful login/signup.
 export function beginSession(): void {
   queryClient.clear();
 }
 
 // Call from every sign-out control; the hard redirect resets all in-memory state.
-export async function endSession(redirectTo: string = "/"): Promise<void> {
+export async function endSession(redirectTo: string = "/login"): Promise<void> {
   try {
     await apiPost("/auth/logout");
+  } catch (error) {
+    console.error("Erro ao invalidar sessão no backend:", error);
   } finally {
     queryClient.clear();
-    window.location.assign(redirectTo);
+    localStorage.clear();
+    window.location.replace(redirectTo);
   }
 }
