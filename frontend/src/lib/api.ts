@@ -1,119 +1,76 @@
-// Typed fetch layer over the FastAPI backend.
-const API_URL = (import.meta.env.VITE_API_BASE_URL || "https://controlefinanceiro-xxcd.onrender.com").replace(/\/$/, "");
-const BASE = `${API_URL}/api`;
+const API_URL = import.meta.env.VITE_API_URL || "";
 
-// Fields are declared, not constructor parameter properties: tsconfig sets
-// erasableSyntaxOnly, which rejects `constructor(readonly status: number)`.
-export class ApiError extends Error {
-  status: number;
-  body: unknown;
-
-  constructor(status: number, body: unknown) {
-    super(`request failed with ${status}`);
-    this.name = "ApiError";
-    this.status = status;
-    this.body = body;// Typed fetch layer over the FastAPI backend.
-const API_URL = (import.meta.env.VITE_API_BASE_URL || "https://controlefinanceiro-xxcd.onrender.com").replace(/\/$/, "");
-const BASE = `${API_URL}/api`;
-
-// Fields are declared, not constructor parameter properties: tsconfig sets
-// erasableSyntaxOnly, which rejects `constructor(readonly status: number)`.
-export class ApiError extends Error {
-  status: number;
-  body: unknown;
-
-  constructor(status: number, body: unknown) {
-    super(`request failed with ${status}`);
-    this.name = "ApiError";
-    this.status = status;
-    this.body = body;
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.message || "Erro na requisição");
   }
+  return response.json();
 }
 
-type JsonBody = unknown;
-
-async function request<T>(method: string, path: string, body?: JsonBody): Promise<T> {
-  const formattedPath = path.startsWith("/") ? path : `/${path}`;
-
-  // Auth rides the httpOnly session cookie automatically — never add auth headers here.
-  const res = await fetch(`${BASE}${formattedPath}`, {
-    method,
+export async function apiGet<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_URL}/api${path}`, {
+    method: "GET",
     credentials: "include",
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
-
-  // FastAPI reports request-validation failures as 422 with a {detail: [...]} body.
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => null);
-    throw new ApiError(res.status, errBody);
-  }
-
-  if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
+  return handleResponse<T>(response);
 }
 
-// The response type is yours to declare: nothing infers across the Python boundary, so a
-// TS interface here mirrors the endpoint's Pydantic model by hand — keep the two in sync.
-export const apiGet = <T>(path: string) => request<T>("GET", path);
-export const apiPost = <T>(path: string, body?: JsonBody) => request<T>("POST", path, body);
-export const apiPut = <T>(path: string, body?: JsonBody) => request<T>("PUT", path, body);
-export const apiPatch = <T>(path: string, body?: JsonBody) => request<T>("PATCH", path, body);
-export const apiDelete = <T>(path: string) => request<T>("DELETE", path);
-
-export const apiUpload = async <T>(path: string, file: File): Promise<T> => {
-  const formattedPath = path.startsWith("/") ? path : `/${path}`;
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await fetch(`${BASE}${formattedPath}`, { method: "POST", credentials: "include", body: formData });
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => null);
-    throw new ApiError(res.status, errBody);
-  }
-  return (await res.json()) as T;
-};
-  }
-}
-
-type JsonBody = unknown;
-
-async function request<T>(method: string, path: string, body?: JsonBody): Promise<T> {
-  const formattedPath = path.startsWith("/") ? path : `/${path}`;
-
-  // Auth rides the httpOnly session cookie automatically — never add auth headers here.
-  const res = await fetch(`${BASE}${formattedPath}`, {
-    method,
+export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
+  const response = await fetch(`${API_URL}/api${path}`, {
+    method: "POST",
     credentials: "include",
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
   });
-
-  // FastAPI reports request-validation failures as 422 with a {detail: [...]} body.
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => null);
-    throw new ApiError(res.status, errBody);
-  }
-
-  if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
+  return handleResponse<T>(response);
 }
 
-// The response type is yours to declare: nothing infers across the Python boundary, so a
-// TS interface here mirrors the endpoint's Pydantic model by hand — keep the two in sync.
-export const apiGet = <T>(path: string) => request<T>("GET", path);
-export const apiPost = <T>(path: string, body?: JsonBody) => request<T>("POST", path, body);
-export const apiPut = <T>(path: string, body?: JsonBody) => request<T>("PUT", path, body);
-export const apiPatch = <T>(path: string, body?: JsonBody) => request<T>("PATCH", path, body);
-export const apiDelete = <T>(path: string) => request<T>("DELETE", path);
+export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
+  const response = await fetch(`${API_URL}/api${path}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return handleResponse<T>(response);
+}
 
-export const apiUpload = async <T>(path: string, file: File): Promise<T> => {
-  const formattedPath = path.startsWith("/") ? path : `/${path}`;
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await fetch(`${BASE}${formattedPath}`, { method: "POST", credentials: "include", body: formData });
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => null);
-    throw new ApiError(res.status, errBody);
-  }
-  return (await res.json()) as T;
-};
+export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
+  const response = await fetch(`${API_URL}/api${path}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return handleResponse<T>(response);
+}
+
+export async function apiDelete<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_URL}/api${path}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return handleResponse<T>(response);
+}
+
+export async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
+  const response = await fetch(`${API_URL}/api${path}`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  return handleResponse<T>(response);
+}
