@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, Request, Response, status
 from passlib.context import CryptContext
 
 from lib.db import db
@@ -26,6 +26,30 @@ def create_token(user_id: str) -> str:
     return jwt.encode(payload, os.environ["JWT_SECRET"], algorithm=ALGORITHM)
 
 
+def set_session_cookie(response: Response, token: str) -> None:
+    """Define o cookie HttpOnly preparado para comunicação Vercel -> Render (Cross-Site)"""
+    response.set_cookie(
+        key="cashcontrol_session",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=7 * 24 * 3600,
+        path="/",
+    )
+
+
+def clear_session_cookie(response: Response) -> None:
+    """Remove o cookie de sessão na resposta da rota de logout"""
+    response.delete_cookie(
+        key="cashcontrol_session",
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/",
+    )
+
+
 async def optional_user(request: Request) -> UserPublic | None:
     token = request.cookies.get("cashcontrol_session")
     if not token:
@@ -35,6 +59,7 @@ async def optional_user(request: Request) -> UserPublic | None:
         user_id = str(payload["sub"])
     except (jwt.PyJWTError, KeyError):
         return None
+        
     user = await db.users.find_one({"id": user_id})
     if not user:
         return None
