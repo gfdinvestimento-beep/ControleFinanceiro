@@ -1,10 +1,33 @@
+import React from "react";
 import { endSession } from "@/lib/session";
+import { LogOut } from "lucide-react";
 
-// No botão de Sair/Logout do seu componente:
-const handleLogout = async () => {
-  try {
-    await endSession();
-  } catch (error) {
-    console.error("Erro ao deslogar:", error);
-  }
-};
+interface AppShellProps {
+  children: React.ReactNode;
+}
+
+export default function AppShell({ children }: AppShellProps) {
+  const handleLogout = async () => {
+    try {
+      await endSession();
+    } catch (error) {
+      console.error("Erro ao deslogar:", error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#070b12] text-slate-100 flex">
+      {/* Exemplo de menu lateral onde o botão chama o handleLogout */}
+      <main className="flex-1 p-6">
+        {children}
+        <button 
+          onClick={handleLogout}
+          className="mt-4 flex items-center gap-2 text-sm text-slate-400 hover:text-rose-400"
+        >
+          <LogOut size={16} />
+          Sair
+        </button>
+      </main>
+    </div>
+  );
+}
