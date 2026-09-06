@@ -32,14 +32,19 @@ def create_token(user_id: str) -> str:
     return jwt.encode(payload, secret, algorithm=ALGORITHM)
 
 def set_session_cookie(response: Response, token: str):
+    is_prod = os.getenv("ENVIRONMENT") == "production"
+    
+    # Em ambiente de desenvolvimento local (HTTP/localhost), o cookie
+    # precisa de secure=False e samesite="lax" para o navegador aceitar.
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=True,
-        samesite="none",
-        partitioned=True,
-        max_age=7 * 24 * 3600
+        secure=is_prod,
+        samesite="none" if is_prod else "lax",
+        partitioned=is_prod,
+        max_age=7 * 24 * 3600,
+        path="/"
     )
 
 @router.post("/signup")
@@ -114,5 +119,13 @@ async def get_session(request: Request):
 
 @router.post("/logout", status_code=204)
 async def logout(response: Response):
-    response.delete_cookie(key=COOKIE_NAME, samesite="none", secure=True)
+    is_prod = os.getenv("ENVIRONMENT") == "production"
+    
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/",
+        samesite="none" if is_prod else "lax",
+        secure=is_prod,
+        httponly=True
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
